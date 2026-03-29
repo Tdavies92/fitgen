@@ -1,0 +1,1216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FitGen — AI Performance Programme Builder</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{--black:#0a0a0a;--off-black:#111111;--dark:#1a1a1a;--card:#1e1e1e;--border:#2a2a2a;--mid:#444;--muted:#666;--light:#aaa;--white:#f0ede8;--accent:#e8ff47;--accent2:#ff6b35;--accent3:#47c5ff;--green:#47ffb2;--red:#ff4757;--yellow:#ffd43b;--purple:#c084fc}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-serif;font-size:15px;line-height:1.65;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+
+/* LANDING */
+.landing{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 24px 60px;text-align:center;position:relative;overflow:hidden}
+.landing::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(232,255,71,0.07) 0%,transparent 70%);pointer-events:none}
+.hero-eyebrow{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.2em;color:var(--accent);text-transform:uppercase;margin-bottom:16px}
+.landing h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(64px,14vw,120px);line-height:0.88;letter-spacing:0.02em;color:var(--white);margin-bottom:20px}
+.landing h1 span{color:var(--accent)}
+.landing-sub{font-size:15px;color:var(--light);max-width:500px;margin:0 auto 36px;line-height:1.7}
+.landing-stats{display:flex;gap:40px;justify-content:center;margin-bottom:48px;flex-wrap:wrap}
+.ls-item{text-align:center}
+.ls-num{font-family:'Bebas Neue',sans-serif;font-size:36px;color:var(--accent);line-height:1}
+.ls-lbl{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.1em;color:var(--muted);text-transform:uppercase;margin-top:3px}
+.cta-btn{display:inline-flex;align-items:center;gap:10px;background:var(--accent);color:var(--black);font-family:'DM Mono',monospace;font-size:12px;font-weight:500;letter-spacing:0.12em;text-transform:uppercase;padding:16px 32px;border-radius:4px;border:none;cursor:pointer;transition:all 0.2s}
+.cta-btn:hover{opacity:0.88;transform:translateY(-2px)}
+
+/* API BANNER */
+.api-banner{background:rgba(232,255,71,0.05);border:1px solid rgba(232,255,71,0.15);border-radius:8px;padding:20px 24px;margin:20px auto;max-width:560px;text-align:left}
+.api-banner h4{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.15em;text-transform:uppercase;color:var(--accent);margin-bottom:8px}
+.api-banner p{font-size:13px;color:var(--light);line-height:1.6;margin-bottom:12px}
+.api-banner a{color:var(--accent3)}
+.api-row{display:flex;gap:8px}
+.api-input{flex:1;background:var(--off-black);border:1px solid var(--border);border-radius:4px;padding:10px 14px;color:var(--white);font-family:'DM Mono',monospace;font-size:12px;outline:none;transition:border-color 0.2s}
+.api-input:focus{border-color:var(--accent)}
+.api-save{background:var(--accent);color:var(--black);font-family:'DM Mono',monospace;font-size:11px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;border:none;border-radius:4px;padding:10px 16px;cursor:pointer;white-space:nowrap}
+.api-status{font-family:'DM Mono',monospace;font-size:11px;margin-top:8px}
+
+/* QUESTIONNAIRE */
+.q-wrap{max-width:680px;margin:0 auto;padding:20px 20px 80px;display:none}
+.q-progress{margin-bottom:36px}
+.q-prog-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.q-prog-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted)}
+.q-prog-count{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--accent)}
+.q-track{background:var(--dark);height:3px;border-radius:2px;overflow:hidden}
+.q-fill{height:100%;background:var(--accent);border-radius:2px;transition:width 0.5s cubic-bezier(0.4,0,0.2,1)}
+.q-section-divider{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:var(--accent);margin:8px 0 20px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.q-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:36px 32px;animation:slideIn 0.3s cubic-bezier(0.4,0,0.2,1)}
+@keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:none}}
+.q-step{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:var(--accent);margin-bottom:10px}
+.q-text{font-family:'Bebas Neue',sans-serif;font-size:clamp(22px,5vw,32px);letter-spacing:0.03em;color:var(--white);line-height:1.15;margin-bottom:8px}
+.q-hint{font-size:12px;color:var(--muted);margin-bottom:24px;font-style:italic}
+.opts-grid{display:grid;gap:8px}
+.opts-grid.cols2{grid-template-columns:1fr 1fr}
+.opts-grid.cols3{grid-template-columns:1fr 1fr 1fr}
+.opt{padding:13px 16px;border:1.5px solid var(--border);border-radius:4px;background:var(--dark);font-family:'DM Sans',sans-serif;font-size:13px;color:var(--light);cursor:pointer;text-align:left;transition:all 0.15s;position:relative}
+.opt:hover{border-color:var(--accent);color:var(--white)}
+.opt.sel{border-color:var(--accent);background:rgba(232,255,71,0.06);color:var(--accent)}
+.opt.sel::after{content:'✓';position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:12px;color:var(--accent)}
+.opt.multi.sel{border-color:var(--accent3);background:rgba(71,197,255,0.06);color:var(--accent3)}
+.opt.multi.sel::after{color:var(--accent3)}
+.q-text-input,.q-single-input{width:100%;background:var(--off-black);border:1.5px solid var(--border);border-radius:4px;padding:14px 16px;color:var(--white);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border-color 0.2s}
+.q-text-input{resize:vertical;min-height:80px}
+.q-text-input:focus,.q-single-input:focus{border-color:var(--accent)}
+.q-nav{display:flex;justify-content:space-between;align-items:center;margin-top:28px}
+.q-back{background:none;border:none;color:var(--muted);font-family:'DM Mono',monospace;font-size:12px;letter-spacing:0.08em;cursor:pointer;padding:10px 0;transition:color 0.15s}
+.q-back:hover{color:var(--white)}
+.q-next{background:var(--accent);color:var(--black);font-family:'DM Mono',monospace;font-size:12px;font-weight:500;letter-spacing:0.12em;text-transform:uppercase;border:none;border-radius:4px;padding:14px 28px;cursor:pointer;transition:all 0.2s}
+.q-next:hover{opacity:0.88}
+.q-error{background:rgba(255,71,87,0.08);border:1px solid rgba(255,71,87,0.3);border-radius:4px;padding:10px 14px;font-size:12px;color:var(--red);margin-top:12px;display:none}
+.q-error.show{display:block}
+
+/* GENERATING */
+.gen-screen{display:none;text-align:center;padding:80px 24px;max-width:480px;margin:0 auto}
+.gen-screen.active{display:block}
+.gen-spinner{width:52px;height:52px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;margin:0 auto 36px;animation:spin 0.9s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.gen-title{font-family:'Bebas Neue',sans-serif;font-size:42px;color:var(--white);margin-bottom:10px;letter-spacing:0.03em}
+.gen-status{font-size:13px;color:var(--light);margin-bottom:32px}
+.gen-steps{list-style:none;text-align:left;display:inline-block}
+.gen-step{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.06em;color:var(--muted);padding:5px 0;display:flex;align-items:center;gap:10px;transition:color 0.3s}
+.gen-step.done{color:var(--green)}
+.gen-step.active{color:var(--white);font-weight:500}
+.gen-step .dot{width:8px;height:8px;border-radius:50%;background:var(--border);flex-shrink:0;transition:background 0.3s}
+.gen-step.done .dot{background:var(--green)}
+.gen-step.active .dot{background:var(--accent);animation:pulse 1s ease infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+
+/* RESULTS */
+.results-screen{display:none;max-width:680px;margin:0 auto;padding:40px 20px 80px}
+.results-screen.active{display:block;animation:fadeUp 0.5s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+.results-header{text-align:center;margin-bottom:36px}
+.results-header h2{font-family:'Bebas Neue',sans-serif;font-size:48px;color:var(--white);letter-spacing:0.03em;line-height:1}
+.results-header h2 span{color:var(--accent)}
+.dl-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:28px}
+.dl-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:28px 24px;text-align:center;transition:all 0.2s}
+.dl-card:hover{border-color:var(--accent);transform:translateY(-3px)}
+.dl-icon{font-size:36px;margin-bottom:12px;display:block}
+.dl-title{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:0.05em;margin-bottom:6px}
+.dl-desc{font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:18px}
+.dl-btn{display:inline-block;padding:10px 24px;background:var(--accent);color:var(--black);font-family:'DM Mono',monospace;font-size:11px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;border:none;border-radius:4px;cursor:pointer;transition:opacity 0.2s}
+.dl-btn:hover{opacity:0.88}
+.dl-btn.ghost{background:transparent;border:1px solid var(--border);color:var(--light)}
+.dl-btn.ghost:hover{border-color:var(--accent);color:var(--accent)}
+.preview-box{background:var(--card);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:24px}
+.preview-top{background:var(--dark);border-bottom:1px solid var(--border);padding:14px 20px;display:flex;justify-content:space-between;align-items:center}
+.preview-top h4{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent)}
+.preview-content{padding:24px;max-height:380px;overflow-y:auto;font-size:13px;color:var(--light);line-height:1.7}
+.preview-content h3{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:var(--accent);margin:16px 0 8px}
+.preview-content p{margin-bottom:8px}
+.restart-btn{width:100%;padding:14px;background:none;border:1px solid var(--border);border-radius:4px;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);cursor:pointer;transition:all 0.2s}
+.restart-btn:hover{border-color:var(--white);color:var(--white)}
+.err-box{background:rgba(255,71,87,0.08);border:1px solid rgba(255,71,87,0.3);border-radius:6px;padding:16px 18px;font-size:13px;color:var(--red);margin-top:16px;display:none}
+.err-box.show{display:block}
+@media(max-width:580px){.opts-grid.cols2,.opts-grid.cols3{grid-template-columns:1fr}.dl-grid{grid-template-columns:1fr}.q-card{padding:24px 20px}.landing-stats{gap:24px}}
+</style>
+</head>
+<body>
+
+<!-- LANDING -->
+<div id="landing" class="landing">
+  <div class="hero-eyebrow">Powered by Claude AI</div>
+  <h1>FIT<br><span>GEN</span></h1>
+  <p class="landing-sub">Answer 30 questions. Get a fully personalised performance programme — 8-week training blocks, benchmark tracking, roadmap, nutrition, and an interactive daily tracker.</p>
+  <div class="landing-stats">
+    <div class="ls-item"><div class="ls-num">30</div><div class="ls-lbl">Questions</div></div>
+    <div class="ls-item"><div class="ls-num">~5<span style="font-size:18px;font-family:'DM Sans',sans-serif"> min</span></div><div class="ls-lbl">To complete</div></div>
+    <div class="ls-item"><div class="ls-num">4wk</div><div class="ls-lbl">Full Block</div></div>
+    <div class="ls-item"><div class="ls-num">2</div><div class="ls-lbl">Files output</div></div>
+  </div>
+  <div class="api-banner" id="api-banner">
+    <h4>One-time setup — API Key</h4>
+    <p>FitGen uses the Claude AI API. You need a free Anthropic key — <a href="https://console.anthropic.com" target="_blank">get yours here →</a> (2 min). Your key stays in your browser only.</p>
+    <div class="api-row">
+      <input type="password" class="api-input" id="api-key-input" placeholder="sk-ant-api03-…">
+      <button class="api-save" onclick="saveApiKey()">Save Key</button>
+    </div>
+    <div class="api-status" id="api-status"></div>
+  </div>
+  <button class="cta-btn" onclick="startQ()">Build My Programme →</button>
+</div>
+
+<!-- QUESTIONNAIRE -->
+<div class="q-wrap" id="q-wrap">
+  <div class="q-progress">
+    <div class="q-prog-header">
+      <span class="q-prog-label">Building Your Profile</span>
+      <span class="q-prog-count" id="q-count">1 / 30</span>
+    </div>
+    <div class="q-track"><div class="q-fill" id="q-fill" style="width:3%"></div></div>
+  </div>
+  <div id="q-area"></div>
+  <div class="q-error" id="q-error"></div>
+</div>
+
+<!-- GENERATING -->
+<div class="gen-screen" id="gen-screen">
+  <div class="gen-spinner"></div>
+  <div class="gen-title">Building your<br>programme…</div>
+  <div class="gen-status">This takes 30–60 seconds. Claude is writing your full 8-week blocks.</div>
+  <ul class="gen-steps">
+    <li class="gen-step active" id="gs1"><span class="dot"></span>Reading your profile</li>
+    <li class="gen-step" id="gs2"><span class="dot"></span>Analysing strengths &amp; gaps</li>
+    <li class="gen-step" id="gs3"><span class="dot"></span>Designing your roadmap</li>
+    <li class="gen-step" id="gs4"><span class="dot"></span>Writing 8-week training blocks</li>
+    <li class="gen-step" id="gs5"><span class="dot"></span>Building benchmark targets</li>
+    <li class="gen-step" id="gs6"><span class="dot"></span>Writing nutrition &amp; recovery plan</li>
+    <li class="gen-step" id="gs7"><span class="dot"></span>Generating your tracker</li>
+  </ul>
+</div>
+
+<!-- RESULTS -->
+<div class="results-screen" id="results-screen">
+  <div class="results-header">
+    <h2>Your programme<br>is <span>ready.</span></h2>
+    <p>Download both files below.</p>
+  </div>
+  <div class="dl-grid">
+    <div class="dl-card">
+      <span class="dl-icon">⚡</span>
+      <div class="dl-title">Interactive Tracker</div>
+      <div class="dl-desc">Full programme: 8-week blocks with daily workouts, benchmark tracking, session logger, roadmap and fatigue guide. Open in any browser.</div>
+      <button class="dl-btn" onclick="downloadTracker()">Download Tracker</button>
+    </div>
+    <div class="dl-card">
+      <span class="dl-icon">📄</span>
+      <div class="dl-title">Programme PDF</div>
+      <div class="dl-desc">Printable summary — analysis, priorities, all workouts, nutrition and supplements.</div>
+      <button class="dl-btn ghost" onclick="downloadPDF()">Download PDF</button>
+    </div>
+  </div>
+  <div class="preview-box">
+    <div class="preview-top">
+      <h4>Programme Preview</h4>
+      <span id="preview-name" style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted)"></span>
+    </div>
+    <div class="preview-content" id="preview-content"></div>
+  </div>
+  <button class="restart-btn" onclick="restart()">↺ &nbsp;Build a new programme</button>
+  <div class="err-box" id="err-box"></div>
+</div>
+
+<script>
+// ═══════════════════════════════════════
+// QUESTIONS — 30 questions, 6 sections
+// ═══════════════════════════════════════
+const QS = [
+  // ABOUT YOU
+  {sec:"About You",id:"name",type:"text",single:true,text:"What's your first name?",hint:"Used to personalise every part of your programme",ph:"Your first name…"},
+  {id:"sex",type:"single",text:"Biological sex?",cols:3,opts:["Male","Female","Prefer not to say"]},
+  {id:"age",type:"single",text:"Age range?",cols:3,opts:["Under 18","18–24","25–34","35–44","45–54","55+"]},
+  {id:"weight",type:"text",single:true,text:"Approximate bodyweight?",hint:"Used to calculate loading percentages and nutrition targets",ph:"e.g. 80kg or 176lbs"},
+  {id:"height",type:"text",single:true,text:"Height? (optional)",hint:"Helps with benchmark context",ph:"e.g. 180cm or 5'11",opt:true},
+
+  // FITNESS BACKGROUND
+  {sec:"Fitness Background",id:"level",type:"single",text:"Current fitness level?",opts:["Beginner — little or no regular training","Intermediate — training 1–2x per week","Active — consistent 3–4x per week","Advanced — serious training 4–6x per week","Elite / competitive athlete"]},
+  {id:"years",type:"single",text:"Years of consistent training?",cols:2,opts:["Less than 1 year","1–2 years","3–5 years","6–10 years","10+ years"]},
+  {id:"status",type:"single",text:"Where are you right now?",opts:["Just starting out","Returning after a break (3+ months off)","Training consistently but on a plateau","Looking to step up to the next level","Preparing for a specific event or competition"]},
+
+  // GOALS
+  {sec:"Goals",id:"primary_goals",type:"multi",text:"Primary fitness goals?",hint:"Select all that apply",cols:2,opts:["Build lean muscle","Lose body fat","Increase strength & power","Improve cardio & endurance","Boost athletic performance","Improve overall health & fitness","Reduce stress & improve mood","Train for a specific event or race"]},
+  {id:"strength_goals",type:"multi",text:"Specific strength or performance targets?",hint:"Select all that apply",cols:2,opts:["Bigger squat","Bigger deadlift","Bigger bench press","Stronger overhead press","More pull-ups or chin-ups","Improve Olympic lifting","Better gymnastics or bodyweight skills","No specific strength targets"]},
+  {id:"event",type:"textarea",text:"Training for a specific event, race or competition?",hint:"Include the date if you have one — this shapes the entire programme structure",ph:"e.g. Marathon October 12th · Hyrox April 5th · Powerlifting meet · Tough Mudder · or leave blank",opt:true},
+  {id:"timeframe",type:"single",text:"Primary goal timeframe?",cols:2,opts:["6 weeks","3 months","6 months","12 months","18+ months"]},
+  {id:"body_goal",type:"single",text:"Body composition goal?",opts:["Lose meaningful body fat","Slight fat loss while building muscle","Maintain weight, improve body composition","Build muscle — some weight gain is fine","Not a priority right now"]},
+
+  // CURRENT FITNESS
+  {sec:"Current Fitness",id:"benchmarks",type:"textarea",text:"Current key lifts and fitness benchmarks?",hint:"The more detail you give here, the more accurate your programming. Share anything you know.",ph:"e.g. Back squat 120kg, Deadlift 150kg, Bench 90kg, OHP 65kg\n5k run 28min, 1 mile 8:30, 2k row 8:15\nMax pull-ups 12, press-ups 40\nor describe your general level if you don't track numbers…"},
+  {id:"weaknesses",type:"textarea",text:"Biggest weaknesses or limiters right now?",hint:"Honest answers here produce a much better programme",ph:"e.g. My cardio collapses in longer sessions. Overhead pressing is weak. I get out of breath easily. Poor hip mobility limits my squat. I fade badly in the last third of any workout…"},
+  {id:"strengths",type:"textarea",text:"Genuine strengths?",hint:"What do you do well? What comes naturally?",ph:"e.g. Strong deadlift. Good at steady-state cardio. High pull-up numbers. Good flexibility. Consistent with attendance. Strong mental toughness…"},
+  {id:"injuries",type:"textarea",text:"Any injuries, niggles or areas to avoid?",hint:"Be specific — your programme will be built around these carefully",ph:"e.g. Left knee tendinopathy — no deep squats. Lower back — careful with volume. Right shoulder impingement — overhead limited. Or: none currently",opt:true},
+
+  // TRAINING SETUP
+  {sec:"Training Setup",id:"days",type:"single",text:"How many days per week can you realistically train?",cols:3,opts:["2 days","3 days","4 days","5 days","6 days"]},
+  {id:"duration",type:"single",text:"How long per session?",cols:2,opts:["20–30 minutes","30–45 minutes","45–60 minutes","60–75 minutes","75–90 minutes"]},
+  {id:"venue",type:"single",text:"Where do you primarily train?",opts:["Commercial gym — full equipment","Functional fitness gym (CrossFit-style)","Home gym — well equipped (barbell, rack, plates)","Home — minimal equipment (dumbbells, bands, KB)","Outdoors / park / bodyweight only","Mix of gym and home"]},
+  {id:"equipment",type:"multi",text:"Equipment you have access to?",hint:"Select all that apply",cols:2,opts:["Barbell & squat rack","Dumbbells (range)","Kettlebells","Resistance bands","Pull-up bar","Cardio machines (rower, bike, treadmill, ski erg)","Rings or TRX","Plyo boxes","No equipment — bodyweight only"]},
+  {id:"enjoy",type:"multi",text:"Types of training you enjoy most?",hint:"This shapes your programme's flavour — be honest",cols:2,opts:["Heavy barbell lifting","Olympic weightlifting","HIIT & circuit training","Long steady-state cardio","Running","Gymnastics & bodyweight","Functional mixed-modal training","Yoga, mobility & Pilates","Cycling or rowing","Swimming"]},
+  {id:"dislike",type:"multi",text:"Anything you strongly dislike or want to avoid?",hint:"Optional — noting this prevents demotivating programming",cols:2,opts:["Running","Burpees","Heavy deadlifts","Olympic lifting","High-rep cardio","Strict diet tracking","Nothing — I'll do what it takes"],opt:true},
+
+  // LIFESTYLE
+  {sec:"Lifestyle & Recovery",id:"diet",type:"single",text:"How would you describe your current diet?",opts:["Poor — mostly processed, takeaways, irregular","Average — mix of healthy and unhealthy","Good — mostly whole foods, reasonably consistent","Excellent — clean, consistent, track macros or calories"]},
+  {id:"sleep",type:"single",text:"Average sleep per night?",cols:2,opts:["Less than 5 hours","5–6 hours","6–7 hours","7–8 hours","8+ hours"]},
+  {id:"activity",type:"single",text:"Activity level outside of workouts?",opts:["Very sedentary — desk job, minimal walking","Moderate — on feet sometimes, light walking","Active — physically active job or lifestyle","Very active — manual labour, rarely sitting"]},
+  {id:"stress",type:"single",text:"Current life stress level?",cols:2,opts:["Low — relaxed period","Moderate — manageable","High — busy but coping","Very high — stretched thin"]},
+  {id:"supps",type:"multi",text:"Supplements you currently take?",cols:2,opts:["Whey or plant protein powder","Creatine","Pre-workout / caffeine","Omega-3 fish oil","Vitamin D","Magnesium","Electrolytes","None at the moment"],opt:true},
+
+  // FINAL DETAILS
+  {sec:"Final Details",id:"context",type:"textarea",text:"Anything else we should know?",hint:"Health conditions, life stage, specific preferences, training history, things you want the programme to include or avoid",ph:"e.g. I'm post-partum 5 months and breastfeeding. I train at 6am before work. I've done Wendler-style programmes before and loved them. My goal is a sub-4hr marathon by October. I hate being in the gym for more than 60 min. My left knee flares on heavy leg press…",opt:true}
+];
+
+// ═══════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════
+let cur = 0, ans = {}, apiKey = localStorage.getItem('fg3_key') || '', genTracker = '', genProg = null;
+
+// ═══════════════════════════════════════
+// API KEY
+// ═══════════════════════════════════════
+function saveApiKey() {
+  const v = document.getElementById('api-key-input').value.trim();
+  const st = document.getElementById('api-status');
+  if (!v.startsWith('sk-ant')) {
+    st.style.color = 'var(--red)'; st.textContent = "⚠ Doesn't look valid — Anthropic keys start with sk-ant"; return;
+  }
+  apiKey = v; localStorage.setItem('fg3_key', v);
+  st.style.color = 'var(--green)'; st.textContent = '✓ Key saved!';
+  setTimeout(() => document.getElementById('api-banner').style.display = 'none', 1200);
+}
+function initApi() { if (apiKey) document.getElementById('api-banner').style.display = 'none'; }
+
+// ═══════════════════════════════════════
+// QUESTIONNAIRE
+// ═══════════════════════════════════════
+function startQ() {
+  document.getElementById('landing').style.display = 'none';
+  document.getElementById('q-wrap').style.display = 'block';
+  renderQ(); window.scrollTo(0,0);
+}
+
+function renderQ() {
+  const q = QS[cur];
+  const pct = Math.round(((cur+1)/QS.length)*100);
+  document.getElementById('q-fill').style.width = pct + '%';
+  document.getElementById('q-count').textContent = (cur+1) + ' / ' + QS.length;
+  const saved = ans[q.id];
+  let html = '';
+  if (q.sec) html += '<div class="q-section-divider">' + q.sec + '</div>';
+  html += '<div class="q-card"><div class="q-step">Question ' + (cur+1) + ' of ' + QS.length + '</div>';
+  html += '<div class="q-text">' + q.text + '</div>';
+  if (q.hint) html += '<div class="q-hint">' + q.hint + '</div>';
+
+  if (q.type === 'text') {
+    if (q.single) html += '<input type="text" class="q-single-input" id="qinp" placeholder="' + (q.ph||'') + '" value="' + (saved||'') + '">';
+    else html += '<textarea class="q-text-input" id="qinp" placeholder="' + (q.ph||'') + '">' + (saved||'') + '</textarea>';
+  } else if (q.type === 'textarea') {
+    html += '<textarea class="q-text-input" id="qinp" placeholder="' + (q.ph||'') + '">' + (saved||'') + '</textarea>';
+  } else if (q.type === 'single') {
+    const gc = q.cols===3?'cols3':q.cols===2?'cols2':'';
+    html += '<div class="opts-grid ' + gc + '">' + q.opts.map(o =>
+      '<button class="opt' + (saved===o?' sel':'') + '" onclick="pickS(this,\'' + o.replace(/'/g,"\\'") + '\')">' + o + '</button>'
+    ).join('') + '</div>';
+  } else if (q.type === 'multi') {
+    const gc = q.cols===3?'cols3':q.cols===2?'cols2':'';
+    const sa = Array.isArray(saved) ? saved : [];
+    html += '<div class="opts-grid ' + gc + '">' + q.opts.map(o =>
+      '<button class="opt multi' + (sa.includes(o)?' sel':'') + '" onclick="pickM(this,\'' + o.replace(/'/g,"\\'") + '\')">' + o + '</button>'
+    ).join('') + '</div>';
+  }
+
+  const isLast = cur === QS.length - 1;
+  html += '<div class="q-nav">';
+  html += '<button class="q-back" onclick="goBack()"' + (cur===0?' style="opacity:0;pointer-events:none"':'') + '>← Back</button>';
+  html += '<button class="q-next" onclick="goNext()">' + (isLast ? 'Generate My Programme →' : 'Continue →') + '</button>';
+  html += '</div></div>';
+
+  document.getElementById('q-area').innerHTML = html;
+  document.getElementById('q-error').classList.remove('show');
+}
+
+function pickS(btn, val) {
+  btn.parentElement.querySelectorAll('.opt').forEach(b => b.classList.remove('sel'));
+  btn.classList.add('sel');
+  ans[QS[cur].id] = val;
+  setTimeout(goNext, 320);
+}
+function pickM(btn) {
+  btn.classList.toggle('sel');
+  ans[QS[cur].id] = [...btn.parentElement.querySelectorAll('.sel')].map(b => b.textContent.trim());
+}
+
+function goNext() {
+  const q = QS[cur];
+  const err = document.getElementById('q-error');
+  err.classList.remove('show');
+  if (q.type === 'text' || q.type === 'textarea') {
+    const v = document.getElementById('qinp')?.value?.trim() || '';
+    if (!v && !q.opt) { err.textContent = 'Please enter a response to continue.'; err.classList.add('show'); return; }
+    ans[q.id] = v;
+  } else if (q.type === 'single') {
+    if (!ans[q.id] && !q.opt) { err.textContent = 'Please select an option.'; err.classList.add('show'); return; }
+  } else if (q.type === 'multi') {
+    if ((!Array.isArray(ans[q.id]) || !ans[q.id].length) && !q.opt) { err.textContent = 'Please select at least one option.'; err.classList.add('show'); return; }
+  }
+  if (cur < QS.length-1) { cur++; renderQ(); window.scrollTo({top:0,behavior:'smooth'}); }
+  else generate();
+}
+function goBack() { if (cur>0) { cur--; renderQ(); window.scrollTo({top:0,behavior:'smooth'}); } }
+
+// ═══════════════════════════════════════
+// GENERATE
+// ═══════════════════════════════════════
+async function generate() {
+  if (!apiKey) {
+    document.getElementById('q-error').textContent = 'Please enter your Anthropic API key on the home screen.';
+    document.getElementById('q-error').classList.add('show');
+    document.getElementById('landing').style.display = 'flex';
+    document.getElementById('q-wrap').style.display = 'none';
+    document.getElementById('api-banner').style.display = 'block';
+    return;
+  }
+  document.getElementById('q-wrap').style.display = 'none';
+  document.getElementById('gen-screen').classList.add('active');
+  window.scrollTo(0,0);
+
+  let si = 0;
+  const sint = setInterval(() => {
+    if (si >= 7) { clearInterval(sint); return; }
+    document.querySelectorAll('.gen-step').forEach((s,j) => {
+      s.classList.remove('active','done');
+      if (j < si) s.classList.add('done');
+      if (j === si) s.classList.add('active');
+    });
+    si++;
+  }, 3200);
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 16000,
+        system: buildSys(),
+        messages: [{ role: 'user', content: buildProfile() }]
+      })
+    });
+    clearInterval(sint);
+    if (!res.ok) {
+      const e = await res.json().catch(() => ({}));
+      if (res.status === 401) throw new Error('Invalid API key. Please check and try again.');
+      if (res.status === 429) throw new Error('Rate limited — wait 30 seconds and try again.');
+      if (res.status === 402) throw new Error('Insufficient API credits. Top up at console.anthropic.com.');
+      throw new Error(e.error?.message || 'API error ' + res.status);
+    }
+    const data = await res.json();
+    const raw = data.content?.[0]?.text || '';
+    const p = parseJ(raw);
+    if (!p) throw new Error('The AI response was incomplete — this occasionally happens on complex programmes. Please try generating again.');
+
+    // Safe defaults
+    ['name','summary','eyebrow','gap_analysis','block1_intro','wendler_setup','daily_protocol','closing_note'].forEach(k => { if (!p[k]) p[k] = ''; });
+    ['badges','strengths','weaknesses','gap_pills','priorities','roadmap','weekly_structure','block1_weeks','benchmarks','retest_schedule','nutrition','supplements','key_principles'].forEach(k => { if (!p[k]) p[k] = []; });
+    if (!p.analysis) p.analysis = {};
+    if (!p.fatigue) p.fatigue = {};
+
+    document.querySelectorAll('.gen-step').forEach(s => s.classList.add('done'));
+    genProg = p; genTracker = buildTracker(p);
+    setTimeout(() => {
+      document.getElementById('gen-screen').classList.remove('active');
+      document.getElementById('results-screen').classList.add('active');
+      document.getElementById('preview-name').textContent = p.name;
+      document.getElementById('preview-content').innerHTML = buildPreview(p);
+      window.scrollTo(0,0);
+    }, 600);
+  } catch(err) {
+    clearInterval(sint);
+    document.getElementById('gen-screen').classList.remove('active');
+    document.getElementById('results-screen').classList.add('active');
+    const eb = document.getElementById('err-box');
+    eb.textContent = err.message; eb.classList.add('show');
+    console.error('FitGen:', err);
+  }
+}
+
+function parseJ(raw) {
+  const t = s => { try { return JSON.parse(s); } catch { return null; } };
+  let s = raw.replace(/^```json\s*/i,'').replace(/```\s*$/,'').trim();
+  let p = t(s); if (p) return p;
+  const m = s.match(/\{[\s\S]*\}/); if (m) { p = t(m[0]); if (p) return p; }
+  let op=0,oa=0; for (const c of s){if(c==='{')op++;else if(c==='}')op--;else if(c==='[')oa++;else if(c===']')oa--;}
+  s = s.replace(/,?\s*"[^"]*"\s*:\s*[^,}\]]*$/,'');
+  s += ']'.repeat(Math.max(0,oa)) + '}'.repeat(Math.max(0,op));
+  return t(s);
+}
+
+function buildProfile() {
+  const a = ans, ar = v => Array.isArray(v) ? v.join(', ') : (v || 'Not specified');
+  return `ATHLETE PROFILE FOR PROGRAMME GENERATION:
+
+Name: ${a.name||'?'} | Sex: ${a.sex||'?'} | Age: ${a.age||'?'} | Weight: ${a.weight||'?'} | Height: ${a.height||'not given'}
+
+BACKGROUND:
+Fitness level: ${a.level||'?'}
+Years training: ${a.years||'?'}
+Current status: ${a.status||'?'}
+
+GOALS:
+Primary goals: ${ar(a.primary_goals)}
+Strength/performance goals: ${ar(a.strength_goals)}
+Specific event or race: ${a.event||'None'}
+Timeframe: ${a.timeframe||'?'}
+Body composition goal: ${a.body_goal||'?'}
+
+CURRENT FITNESS:
+Benchmarks / key lifts: ${a.benchmarks||'Not provided'}
+Biggest weaknesses: ${a.weaknesses||'Not provided'}
+Genuine strengths: ${a.strengths||'Not provided'}
+Injuries or niggles: ${a.injuries||'None'}
+
+TRAINING SETUP:
+Days per week: ${a.days||'?'}
+Session length: ${a.duration||'?'}
+Training venue: ${a.venue||'?'}
+Equipment: ${ar(a.equipment)}
+Enjoys: ${ar(a.enjoy)}
+Dislikes: ${ar(a.dislike)}
+
+LIFESTYLE:
+Diet quality: ${a.diet||'?'}
+Sleep: ${a.sleep||'?'}
+Daily activity: ${a.activity||'?'}
+Stress level: ${a.stress||'?'}
+Supplements: ${ar(a.supps)}
+
+ADDITIONAL CONTEXT:
+${a.context||'None provided'}`;
+}
+
+function buildSys() {
+  const days = ans.days || '4';
+  return `You are an elite performance coach and programme designer. Create a comprehensive, personalised fitness programme based on the athlete profile provided.
+
+OUTPUT: Raw JSON only. No markdown fences, no preamble, no explanation. Start your response with { and end with }.
+
+REQUIRED JSON SCHEMA:
+{
+  "name": "Creative programme name (not generic — make it specific to this person's goal)",
+  "eyebrow": "Short descriptor line e.g. Female · 68kg · 4 Days/Week · 60-Min Sessions",
+  "summary": "3–4 sentences: what this programme is, why it's right for this person, and what they'll achieve",
+  "badges": ["Badge 1","Badge 2","Badge 3","Badge 4","Badge 5"],
+  "analysis": {
+    "headline": "2–3 sentences: honest performance snapshot — current level, main limiters, the opportunity",
+    "strength_profile": [
+      {"label":"Movement or metric + current value","target":"Target","pct":78,"color":"good"}
+    ]
+  },
+  "strengths": ["5–8 specific strengths of this athlete"],
+  "weaknesses": ["5–8 specific weaknesses or gaps"],
+  "gap_analysis": "2–3 sentences on the real gap between where they are and where they want to be. Be specific.",
+  "gap_pills": ["Gap 1","Gap 2","Gap 3","Gap 4"],
+  "priorities": [
+    {"color":"warn","icon":"⚡","title":"Priority #1 — Title","body":"2–3 sentences. Why this is the highest leverage thing they can do."},
+    {"color":"info","icon":"🔼","title":"Priority #2 — Title","body":"2–3 sentences."},
+    {"color":"info","icon":"🤸","title":"Priority #3 — Title","body":"2–3 sentences."},
+    {"color":"good","icon":"⚖️","title":"Priority #4 — Title","body":"2–3 sentences."}
+  ],
+  "roadmap": [
+    {"color":"accent","head":"Phase 1 — Name","sub":"Weeks 1–8 · Month–Month","body":"What this phase builds. Why. What changes by the end."},
+    {"color":"blue","head":"Phase 2 — Name","sub":"Weeks 9–16","body":"..."},
+    {"color":"warn","head":"Phase 3 — Name","sub":"Weeks 17–24","body":"..."},
+    {"color":"green","head":"Goal / Event / Peak","sub":"Target date or timeframe","body":"What success looks like."}
+  ],
+  "weekly_structure": [
+    {
+      "color":"accent",
+      "day_name":"DAY 1 — STRENGTH + SKILL",
+      "day_tag":"Open gym · ~60 min",
+      "items":[
+        {"time":"5'","text":"Warm-up: details"},
+        {"time":"30'","text":"Main block: details"},
+        {"time":"15'","text":"Accessory or skill block: details"},
+        {"time":"10'","text":"Cool-down"}
+      ]
+    }
+  ],
+  "block1_intro": "2–3 sentences on Block 1 theme, progression model and what the 4 weeks will build.",
+  "wendler_setup": "Explain the loading methodology in detail. If strength-focused: training max calculation, wave structure, progression. If conditioning-focused: explain the intensity zones and periodisation approach. Be specific to this athlete.",
+  "daily_protocol": "Daily non-negotiables for this athlete — mobility, prehab, habits. Write as 4–5 bullet points separated by newline characters.",
+  "block1_weeks": [
+    {
+      "num": "WEEK 1",
+      "focus": "ACCUMULATION · PHASE LABEL",
+      "intent": "One sentence: the specific purpose of this week",
+      "sessions": [
+        {
+          "label": "Day 1 — Session Type",
+          "color": "blue",
+          "wod_title": "Session Title",
+          "content": "FULL session content. Include: warm-up, main work with exact sets/reps/weights (use % of max OR absolute kg), accessory work, any conditioning, coaching cues. Use line breaks between sections. MINIMUM 10 lines. This is the actual workout — make it real and specific.",
+          "note": "Key target or coaching focus for this session"
+        }
+      ]
+    }
+  ],
+  "benchmarks": [
+    {"name":"Benchmark name","current":"Current score or level","target":"Target","priority":"HIGH"}
+  ],
+  "retest_schedule": ["End of Week 4: retest X, Y","End of Block 2: full battery"],
+  "nutrition": [
+    {"label":"Daily Calories","value":"Specific number range based on their weight, goal and activity. e.g. 2400–2600kcal"},
+    {"label":"Protein","value":"Specific grams per kg AND total grams based on their weight"},
+    {"label":"Carbohydrates","value":"Specific guidance with training day vs rest day timing"},
+    {"label":"Fats","value":"Specific guidance"},
+    {"label":"Hydration","value":"Specific daily target"},
+    {"label":"Pre-Workout","value":"What to eat and when"},
+    {"label":"Post-Workout","value":"What to eat and when"}
+  ],
+  "supplements": [
+    {"name":"Supplement","dose":"Specific dose and exact timing","benefit":"Why this is relevant for this specific athlete"}
+  ],
+  "fatigue": {
+    "red_flags": ["4–5 specific red flags for this athlete — when to reduce load"],
+    "yellow_flags": ["3–4 yellow flags — when to modify"],
+    "priority_rule": "When life is busy and they can only do 2–3 sessions, what order do they prioritise? Be specific to their goals. 3–4 sentences.",
+    "recovery_note": "Specific recovery advice for this athlete. Reference their actual sleep, stress, lifestyle answers."
+  },
+  "key_principles": [
+    {"label":"Principle Name","value":"Why it matters for this specific athlete"}
+  ],
+  "closing_note": "Warm, personal 2–3 sentence closing note. Reference something specific from their profile."
+}
+
+CRITICAL RULES — these determine quality:
+1. Generate EXACTLY ${days} training sessions per week in weekly_structure AND in each week of block1_weeks
+2. block1_weeks MUST have EXACTLY 4 weeks. Every week must have full sessions for every training day.
+3. session content fields: WRITE REAL WORKOUTS. Actual exercise names, sets, reps, loading as % or kg. 6–10 lines. This is the core value of the entire programme. Be specific but concise — no padding.
+4. TAILOR EVERYTHING. No generic advice. Every section must reference this athlete's specific profile, goals, lifts, injuries, and context.
+5. If they have a specific event with a date, structure the roadmap to peak for it.
+6. If post-partum, breastfeeding, or any health condition — address this prominently and safely throughout.
+7. If they gave you specific benchmark numbers, use those numbers in loading percentages.
+8. nutrition values must include SPECIFIC NUMBERS based on their bodyweight and goal.
+9. DO NOT make this CrossFit-specific unless they asked for it. Keep it general — strength, conditioning, performance.
+10. Keep string values under 200 chars EXCEPT session content fields which should be comprehensive.`;
+}
+
+// ═══════════════════════════════════════
+// PREVIEW
+// ═══════════════════════════════════════
+function buildPreview(p) {
+  const name = ans.name || 'Your';
+  let h = '<p><strong>' + p.name + '</strong></p><p>' + (p.summary||'') + '</p>';
+  if (p.priorities && p.priorities.length) {
+    h += '<h3>Top Priorities</h3>';
+    p.priorities.slice(0,3).forEach(pr => { h += '<p><strong>' + pr.title + '</strong><br><span style="color:var(--light)">' + pr.body + '</span></p>'; });
+  }
+  if (p.block1_weeks && p.block1_weeks.length) {
+    h += '<h3>Week 1 Sample Session</h3>';
+    const w = p.block1_weeks[0];
+    if (w.sessions && w.sessions.length) {
+      h += '<p><strong>' + (w.sessions[0].wod_title || w.sessions[0].label) + '</strong></p>';
+      h += '<p style="white-space:pre-line;font-size:12px">' + (w.sessions[0].content||'').slice(0,500) + '…</p>';
+    }
+  }
+  if (p.closing_note) h += '<h3>A Note for ' + name + '</h3><p><em>"' + p.closing_note + '"</em></p>';
+  return h;
+}
+
+// ═══════════════════════════════════════
+// BUILD TRACKER — the generated HTML file
+// ═══════════════════════════════════════
+function buildTracker(p) {
+  const name = ans.name || 'Athlete';
+
+  // helpers
+  const esc = s => (s||'').replace(/`/g,'\\`').replace(/\$/g,'\\$');
+
+  // Strength profile bars
+  const barsH = (p.analysis.strength_profile||[]).map(b => {
+    const col = b.color==='good' ? '#47ffb2' : b.color==='mid' ? '#47c5ff' : '#ff6b35';
+    return `<div class="bar-row">
+      <div class="bar-label"><span>${b.label}</span><span>${b.target}</span></div>
+      <div class="bar-track"><div class="bar-fill" style="width:${b.pct||50}%;background:${col}"></div></div>
+    </div>`;
+  }).join('');
+
+  // SW grid
+  const swH = `<div class="grid-2">
+    <div class="card"><div class="card-title" style="color:var(--green)">✓ Strengths</div><ul>
+      ${(p.strengths||[]).map(s=>`<li>${s}</li>`).join('')}
+    </ul></div>
+    <div class="card"><div class="card-title" style="color:var(--accent2)">✗ Weaknesses</div><ul>
+      ${(p.weaknesses||[]).map(w=>`<li>${w}</li>`).join('')}
+    </ul></div>
+  </div>`;
+
+  // Priorities
+  const prioH = (p.priorities||[]).map(pr => {
+    const cls = pr.color==='warn'?'alert-warn':pr.color==='info'?'alert-info':'alert-good';
+    return `<div class="alert ${cls}"><div class="alert-title">${pr.icon||''} ${pr.title}</div>${pr.body}</div>`;
+  }).join('');
+
+  // Roadmap
+  const roadH = (p.roadmap||[]).map(r => {
+    const dc = r.color==='blue'?'blue':r.color==='warn'?'warn':r.color==='green'?'green':'';
+    return `<div class="tl-item">
+      <div class="tl-dot ${dc}"></div>
+      <div class="tl-head">${r.head}</div>
+      <div class="tl-sub">${r.sub}</div>
+      <div class="tl-body">${r.body}</div>
+    </div>`;
+  }).join('');
+
+  // Weekly structure
+  const weeklyH = (p.weekly_structure||[]).map(d => {
+    const dc = d.color==='blue'?'blue':d.color==='orange'?'orange':d.color==='green'?'green':'';
+    return `<div class="day-card ${dc}">
+      <div class="day-name">${d.day_name}</div>
+      <div class="day-tag">${d.day_tag||''}</div>
+      <ul class="day-items">${(d.items||[]).map(it=>`<li><span class="di-time">${it.time}</span><span>${it.text}</span></li>`).join('')}</ul>
+    </div>`;
+  }).join('');
+
+  // 8-week blocks
+  const weeksH = (p.block1_weeks||[]).map((wk,wi) => {
+    const isDl = (wk.focus||'').toUpperCase().includes('DELOAD') || wk.num === 'WEEK 8';
+    const hdrS = isDl ? 'style="background:rgba(255,107,53,0.1);border-color:rgba(255,107,53,0.2)"' : '';
+    const numS = isDl ? 'style="color:var(--accent2)"' : '';
+    const focS = isDl ? 'style="color:var(--accent2)"' : '';
+    const blkS = isDl ? 'style="border-color:var(--accent2)"' : '';
+    return `<div class="week-block" ${blkS}>
+      <div class="week-header" ${hdrS}>
+        <span class="week-num" ${numS}>${wk.num || 'WEEK '+(wi+1)}</span>
+        <span class="week-focus" ${focS}>${wk.focus||''}</span>
+        ${wk.intent ? '<span class="week-intent">'+wk.intent+'</span>' : ''}
+      </div>
+      <div class="week-body">
+        ${(wk.sessions||[]).map(s => {
+          const lc = s.color==='orange'?'orange':s.color==='green'?'green':s.color==='yellow'?'yellow':'';
+          return `<div class="session">
+            <div class="session-label ${lc}">${s.label}</div>
+            <div class="workout-box">
+              ${s.wod_title ? '<div class="wod-title">'+s.wod_title+'</div>' : ''}
+              <div style="white-space:pre-line">${s.content||''}</div>
+              ${s.note ? '<div class="note">🎯 '+s.note+'</div>' : ''}
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }).join('');
+
+  // Benchmarks table
+  const bmRowsH = (p.benchmarks||[]).map(b =>
+    `<tr><td>${b.name}</td><td class="current">${b.current||'—'}</td><td class="target">${b.target||'—'}</td>
+     <td><span class="pill ${b.priority==='HIGH'?'warn':b.priority==='LOW'?'green':'accent'}">${b.priority||'MED'}</span></td></tr>`
+  ).join('');
+
+  // Nutrition
+  const nutH = (p.nutrition||[]).map(n =>
+    `<div class="nut-row"><div class="nut-label">${n.label}</div><div class="nut-val">${n.value}</div></div>`
+  ).join('');
+
+  // Supplements
+  const suppH = (p.supplements||[]).map(s =>
+    `<div class="supp-row"><div class="supp-name">${s.name}</div><div class="supp-dose">${s.dose}</div><div class="supp-why">${s.benefit}</div></div>`
+  ).join('');
+
+  // Fatigue
+  const fatRedH = (p.fatigue.red_flags||[]).map(f=>`<li>${f}</li>`).join('');
+  const fatYelH = (p.fatigue.yellow_flags||[]).map(f=>`<li>${f}</li>`).join('');
+
+  // Key principles
+  const prinH = (p.key_principles||[]).map(kp =>
+    `<div class="prin-row"><div class="prin-label">${kp.label}</div><div class="prin-val">${kp.value}</div></div>`
+  ).join('');
+
+  // Session type options for tracker
+  const sessOpts = (p.weekly_structure||[]).map(d=>`<option>${d.day_name}</option>`).join('');
+
+  // Benchmark input rows
+  const bmInpH = (p.benchmarks||[]).map(b => {
+    const kid = 'bm_' + (b.name||'').replace(/\W+/g,'_');
+    return `<div class="bm-inp-row">
+      <div class="bm-inp-info">
+        <div class="bm-inp-name">${b.name}</div>
+        <div class="bm-inp-sub">Start: <span class="c-blue">${b.current||'—'}</span> → Target: <span class="c-acc">${b.target||'—'}</span></div>
+      </div>
+      <input type="text" class="tracker-input bm-inp-field" id="${kid}" placeholder="Update…">
+    </div>`;
+  }).join('');
+
+  // Hero title split
+  const nameParts = (p.name||'MY PROGRAMME').toUpperCase().split(' ');
+  const heroLine1 = nameParts.slice(0, Math.ceil(nameParts.length/2)).join(' ');
+  const heroLine2 = nameParts.slice(Math.ceil(nameParts.length/2)).join(' ');
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>${name} — ${p.name||'Performance Programme'}</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--black:#0a0a0a;--off-black:#111111;--dark:#1a1a1a;--card:#1e1e1e;--border:#2a2a2a;--mid:#444;--muted:#666;--light:#aaa;--white:#f0ede8;--accent:#e8ff47;--accent2:#ff6b35;--accent3:#47c5ff;--green:#47ffb2;--red:#ff4757;--yellow:#ffd43b}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-serif;font-size:15px;line-height:1.65;-webkit-font-smoothing:antialiased}
+.hero{background:var(--off-black);border-bottom:1px solid var(--border);padding:48px 24px 40px;text-align:center;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(232,255,71,0.07) 0%,transparent 70%);pointer-events:none}
+.hero-eyebrow{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.18em;color:var(--accent);text-transform:uppercase;margin-bottom:12px}
+.hero h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(52px,12vw,96px);line-height:0.9;letter-spacing:0.02em;color:var(--white);margin-bottom:16px}
+.hero h1 span{color:var(--accent)}
+.hero-sub{font-size:14px;color:var(--light);max-width:520px;margin:0 auto 24px;line-height:1.7}
+.badge-row{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.badge{background:var(--dark);border:1px solid var(--border);border-radius:6px;font-family:'DM Mono',monospace;font-size:11px;color:var(--light);padding:4px 10px;letter-spacing:0.05em}
+.badge.hi{border-color:var(--accent);color:var(--accent)}.badge.warn{border-color:var(--accent2);color:var(--accent2)}
+.nav-bar{position:sticky;top:0;z-index:100;background:rgba(10,10,10,0.95);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);padding:0 16px;overflow-x:auto;white-space:nowrap;scrollbar-width:none}
+.nav-bar::-webkit-scrollbar{display:none}
+.nav-inner{display:inline-flex;gap:0;min-width:100%;justify-content:center}
+.nav-link{display:inline-block;padding:12px 14px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);text-decoration:none;border-bottom:2px solid transparent;transition:color 0.2s,border-color 0.2s}
+.nav-link:hover,.nav-link.active{color:var(--accent);border-bottom-color:var(--accent)}
+.container{max-width:800px;margin:0 auto;padding:0 16px}
+section{padding:40px 0 32px;border-bottom:1px solid var(--border)}
+section:last-child{border-bottom:none}
+.sec-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.2em;color:var(--accent);text-transform:uppercase;margin-bottom:6px}
+.sec-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(28px,7vw,44px);letter-spacing:0.04em;color:var(--white);margin-bottom:20px;line-height:1}
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:12px}
+.card-title{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);margin-bottom:10px}
+.card p,.card li{font-size:14px;color:var(--light);line-height:1.7}.card ul{padding-left:16px}.card li{margin-bottom:4px}
+strong{color:var(--white);font-weight:600}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}@media(max-width:540px){.grid-2{grid-template-columns:1fr}}
+.bar-row{margin-bottom:10px}
+.bar-label{display:flex;justify-content:space-between;font-family:'DM Mono',monospace;font-size:11px;color:var(--light);margin-bottom:4px}
+.bar-track{background:var(--dark);border-radius:4px;height:6px;overflow:hidden}
+.bar-fill{height:100%;border-radius:4px;background:var(--accent);transition:width 1s ease}
+.timeline{position:relative;padding-left:20px}
+.timeline::before{content:'';position:absolute;left:6px;top:8px;bottom:8px;width:2px;background:var(--border)}
+.tl-item{position:relative;margin-bottom:20px}
+.tl-dot{position:absolute;left:-17px;top:4px;width:10px;height:10px;border-radius:50%;background:var(--accent);border:2px solid var(--black)}
+.tl-dot.warn{background:var(--accent2)}.tl-dot.blue{background:var(--accent3)}.tl-dot.green{background:var(--green)}
+.tl-head{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:0.05em;color:var(--white);margin-bottom:2px}
+.tl-sub{font-family:'DM Mono',monospace;font-size:10px;color:var(--accent);letter-spacing:0.1em;margin-bottom:6px;text-transform:uppercase}
+.tl-body{font-size:13px;color:var(--light)}
+.day-card{background:var(--card);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:8px;padding:16px 18px;margin-bottom:10px}
+.day-card.blue{border-left-color:var(--accent3)}.day-card.orange{border-left-color:var(--accent2)}.day-card.green{border-left-color:var(--green)}
+.day-name{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:0.06em;margin-bottom:2px}
+.day-tag{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px}
+.day-items{list-style:none}
+.day-items li{font-size:13px;color:var(--light);padding:4px 0;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:8px}
+.day-items li:last-child{border-bottom:none}
+.di-time{font-family:'DM Mono',monospace;font-size:10px;color:var(--accent);min-width:32px;margin-top:2px;flex-shrink:0}
+.week-block{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:16px}
+.week-header{background:var(--dark);border-bottom:1px solid var(--border);padding:12px 18px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.week-num{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--accent);letter-spacing:0.05em}
+.week-focus{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em}
+.week-intent{font-size:12px;color:var(--light);font-style:italic;width:100%;margin-top:4px}
+.week-body{padding:14px 18px}
+.session{margin-bottom:14px;padding-bottom:14px;border-bottom:1px dashed var(--border)}
+.session:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+.session-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent3);margin-bottom:6px}
+.session-label.orange{color:var(--accent2)}.session-label.green{color:var(--green)}.session-label.yellow{color:var(--yellow)}
+.workout-box{background:var(--off-black);border-radius:6px;padding:12px 14px;font-size:13px;color:var(--light);line-height:1.8}
+.wod-title{font-family:'Bebas Neue',sans-serif;font-size:16px;color:var(--white);letter-spacing:0.06em;margin-bottom:6px}
+.note{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-top:8px;letter-spacing:0.05em}
+.nut-row{display:grid;grid-template-columns:140px 1fr;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
+.nut-row:last-child{border-bottom:none}
+.nut-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent);padding-top:2px}
+.nut-val{font-size:13px;color:var(--light)}
+.supp-row{display:grid;grid-template-columns:150px 140px 1fr;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);align-items:start}
+.supp-row:last-child{border-bottom:none}
+.supp-name{font-size:14px;color:var(--white);font-weight:500}
+.supp-dose{font-family:'DM Mono',monospace;font-size:11px;color:var(--accent3)}
+.supp-why{font-size:13px;color:var(--light)}
+.prin-row{padding:10px 0;border-bottom:1px solid var(--border)}
+.prin-row:last-child{border-bottom:none}
+.prin-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent);margin-bottom:3px}
+.prin-val{font-size:13px;color:var(--light)}
+.alert{border-radius:8px;padding:14px 16px;margin-bottom:12px;border-left:3px solid;font-size:13px;color:var(--light)}
+.alert-warn{background:rgba(255,107,53,0.08);border-color:var(--accent2)}
+.alert-info{background:rgba(71,197,255,0.07);border-color:var(--accent3)}
+.alert-good{background:rgba(71,255,178,0.07);border-color:var(--green)}
+.alert-title{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px}
+.alert-warn .alert-title{color:var(--accent2)}.alert-info .alert-title{color:var(--accent3)}.alert-good .alert-title{color:var(--green)}
+.tracker-wrap{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.tracker-header{background:var(--dark);border-bottom:1px solid var(--border);padding:16px 20px}
+.tracker-header h3{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:0.05em}
+.tracker-body{padding:20px}
+.input-group{margin-bottom:14px}
+.input-label{display:block;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.tracker-input,.tracker-select,.tracker-textarea{width:100%;background:var(--off-black);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--white);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border-color 0.2s;-webkit-appearance:none}
+.tracker-input:focus,.tracker-select:focus,.tracker-textarea:focus{border-color:var(--accent)}
+.tracker-textarea{min-height:80px;resize:vertical}.tracker-select{cursor:pointer}
+.btn{display:inline-block;padding:10px 20px;background:var(--accent);color:var(--black);font-family:'DM Mono',monospace;font-size:12px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;border:none;border-radius:6px;cursor:pointer;transition:opacity 0.2s,transform 0.1s}
+.btn:active{transform:scale(0.97)}.btn:hover{opacity:0.88}
+.btn.ghost{background:transparent;border:1px solid var(--border);color:var(--light)}.btn.danger{background:var(--red);color:var(--white)}
+.tab-row{display:flex;gap:4px;margin-bottom:20px;border-bottom:1px solid var(--border)}
+.tab-btn{padding:8px 14px;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;background:none;border:none;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:color 0.2s,border-color 0.2s}
+.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent)}.tab-pane{display:none}.tab-pane.active{display:block}
+.bm-inp-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+.bm-inp-info{flex:1 1 140px}.bm-inp-name{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:2px}
+.bm-inp-sub{font-size:11px;color:var(--muted)}.c-blue{color:var(--accent3)}.c-acc{color:var(--accent)}.bm-inp-field{flex:0 0 130px;max-width:150px}
+.benchmark-table{width:100%;border-collapse:collapse}
+.benchmark-table th{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);text-align:left;padding:8px 10px;border-bottom:1px solid var(--border)}
+.benchmark-table td{font-size:13px;color:var(--light);padding:9px 10px;border-bottom:1px solid var(--border)}.benchmark-table tr:last-child td{border-bottom:none}
+.benchmark-table td.current{color:var(--accent3);font-family:'DM Mono',monospace;font-size:12px}
+.benchmark-table td.target{color:var(--accent);font-family:'DM Mono',monospace;font-size:12px;font-weight:600}
+.log-list{margin-top:20px}
+.log-entry{background:var(--off-black);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:8px;position:relative;animation:fadeIn 0.3s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.log-entry-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px}
+.log-date{font-family:'DM Mono',monospace;font-size:10px;color:var(--accent);letter-spacing:0.08em}
+.log-week{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted)}
+.log-type-badge{font-family:'DM Mono',monospace;font-size:10px;padding:2px 8px;border-radius:4px;background:var(--dark);color:var(--accent3);border:1px solid var(--border);letter-spacing:0.06em;text-transform:uppercase}
+.log-score{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--accent);letter-spacing:0.05em;margin-top:4px}
+.log-notes{font-size:13px;color:var(--light);margin-top:4px}
+.del-btn{position:absolute;top:10px;right:10px;background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;padding:2px 6px;border-radius:4px;transition:color 0.2s,background 0.2s}
+.del-btn:hover{color:var(--red);background:rgba(255,71,87,0.1)}
+.empty-state{text-align:center;padding:32px 20px;color:var(--muted);font-family:'DM Mono',monospace;font-size:12px;letter-spacing:0.1em}
+.pill{display:inline-block;background:var(--dark);border:1px solid var(--border);border-radius:20px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.06em;padding:3px 9px;color:var(--light);margin:2px}
+.pill.accent{border-color:var(--accent);color:var(--accent)}.pill.warn{border-color:var(--accent2);color:var(--accent2)}.pill.green{border-color:var(--green);color:var(--green)}
+.mt-3{margin-top:12px}.mt-4{margin-top:20px}
+footer{text-align:center;padding:32px 24px;font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:0.1em;border-top:1px solid var(--border)}
+@media(max-width:580px){.grid-2{grid-template-columns:1fr}.supp-row{grid-template-columns:1fr}.week-header{flex-direction:column;align-items:flex-start}}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-eyebrow">${p.eyebrow || 'FitGen · Personalised Programme · ' + name}</div>
+  <h1>${heroLine1}<br><span>${heroLine2 || 'PROGRAMME'}</span></h1>
+  <p class="hero-sub">${p.summary || ''}</p>
+  <div class="badge-row">
+    ${(p.badges||[]).map((b,i) => `<span class="badge ${i<2?'hi':i===2?'warn':''}">${b}</span>`).join('')}
+  </div>
+</div>
+
+<nav class="nav-bar">
+  <div class="nav-inner">
+    <a class="nav-link" href="#analysis">Analysis</a>
+    <a class="nav-link" href="#gaps">Gaps</a>
+    <a class="nav-link" href="#priorities">Priorities</a>
+    <a class="nav-link" href="#roadmap">Roadmap</a>
+    <a class="nav-link" href="#structure">Structure</a>
+    <a class="nav-link" href="#block1">Block 1</a>
+    <a class="nav-link" href="#benchmarks">Benchmarks</a>
+    <a class="nav-link" href="#nutrition">Nutrition</a>
+    <a class="nav-link" href="#fatigue">Fatigue</a>
+    <a class="nav-link" href="#tracker">Tracker</a>
+  </div>
+</nav>
+
+<div class="container">
+
+<section id="analysis">
+  <div class="sec-label">Section A</div>
+  <div class="sec-title">Performance Analysis</div>
+  <div class="card">
+    <div class="card-title">Snapshot Assessment</div>
+    <p>${p.analysis.headline||''}</p>
+  </div>
+  ${barsH ? `<div class="card mt-3"><div class="card-title">Current Profile vs Targets</div>${barsH}</div>` : ''}
+</section>
+
+<section id="gaps">
+  <div class="sec-label">Section B</div>
+  <div class="sec-title">Strengths, Weaknesses<br>&amp; The Gap</div>
+  ${swH}
+  <div class="card mt-3">
+    <div class="card-title">Gap to Goal — The Real Picture</div>
+    <p>${p.gap_analysis||''}</p>
+    <div class="mt-3">${(p.gap_pills||[]).map(g=>`<span class="pill warn">${g}</span>`).join('')}</div>
+  </div>
+</section>
+
+<section id="priorities">
+  <div class="sec-label">Section C</div>
+  <div class="sec-title">Top Priorities</div>
+  ${prioH}
+</section>
+
+<section id="roadmap">
+  <div class="sec-label">Section D</div>
+  <div class="sec-title">Your Roadmap</div>
+  <div class="timeline">${roadH}</div>
+</section>
+
+<section id="structure">
+  <div class="sec-label">Section E</div>
+  <div class="sec-title">Weekly Structure</div>
+  <div class="alert alert-info">
+    <div class="alert-title">How to use these day labels</div>
+    These are flexible day labels, not fixed weekdays. Fit them around your schedule. The key rule: don't stack two hard sessions back-to-back where avoidable.
+  </div>
+  ${weeklyH}
+  ${p.wendler_setup ? `<div class="card mt-3"><div class="card-title">Loading Methodology</div><p style="white-space:pre-line">${p.wendler_setup}</p></div>` : ''}
+  ${p.daily_protocol ? `<div class="card mt-3"><div class="card-title">Daily Non-Negotiables</div><p style="white-space:pre-line">${p.daily_protocol}</p></div>` : ''}
+</section>
+
+<section id="block1">
+  <div class="sec-label">Section F</div>
+  <div class="sec-title">Block 1<br>Weeks 1–4 (Full Detail)</div>
+  ${p.block1_intro ? `<div class="alert alert-info"><div class="alert-title">Block 1 Theme</div>${p.block1_intro}</div>` : ''}
+  <div class="alert alert-good" style="margin-bottom:16px"><div class="alert-title">Block 2 (Weeks 5–8)</div>Complete Block 1, then return to FitGen and generate again — your answers are remembered. Block 2 will progress your loading, vary the stimulus and build on what Block 1 established.</div>
+  ${weeksH}
+</section>
+
+<section id="benchmarks">
+  <div class="sec-label">Section G</div>
+  <div class="sec-title">Benchmarks &amp; Targets</div>
+  <div class="card">
+    <div class="card-title">Key Benchmark Targets</div>
+    <table class="benchmark-table">
+      <thead><tr><th>Benchmark</th><th>Current</th><th>Target</th><th>Priority</th></tr></thead>
+      <tbody>${bmRowsH}</tbody>
+    </table>
+  </div>
+  ${p.retest_schedule && p.retest_schedule.length ? `<div class="card mt-3"><div class="card-title">Retest Schedule</div><ul>${p.retest_schedule.map(r=>`<li>${r}</li>`).join('')}</ul></div>` : ''}
+</section>
+
+<section id="nutrition">
+  <div class="sec-label">Section H</div>
+  <div class="sec-title">Nutrition &amp; Supplements</div>
+  <div class="card"><div class="card-title">Nutrition Plan</div>${nutH}</div>
+  ${suppH ? `<div class="card mt-3"><div class="card-title">Supplement Stack</div>${suppH}</div>` : ''}
+</section>
+
+<section id="fatigue">
+  <div class="sec-label">Section I</div>
+  <div class="sec-title">Fatigue Management<br>&amp; Warning Signs</div>
+  <div class="grid-2">
+    <div class="alert alert-warn">
+      <div class="alert-title">🔴 Red Flags — Reduce Load</div>
+      <ul style="font-size:13px;color:var(--light);padding-left:14px">${fatRedH}</ul>
+    </div>
+    <div class="alert alert-info">
+      <div class="alert-title">🟡 Yellow Flags — Modify</div>
+      <ul style="font-size:13px;color:var(--light);padding-left:14px">${fatYelH}</ul>
+    </div>
+  </div>
+  ${p.fatigue.priority_rule ? `<div class="card mt-3"><div class="card-title">Priority Rule — When Life Gets Busy</div><p>${p.fatigue.priority_rule}</p></div>` : ''}
+  ${p.fatigue.recovery_note ? `<div class="card mt-3"><div class="card-title">Recovery — Your Specific Context</div><p>${p.fatigue.recovery_note}</p></div>` : ''}
+  ${prinH ? `<div class="card mt-3"><div class="card-title">Key Principles</div>${prinH}</div>` : ''}
+  ${p.closing_note ? `<div class="alert alert-good" style="margin-top:16px"><div class="alert-title">A Note for ${name}</div>"${p.closing_note}"</div>` : ''}
+</section>
+
+<section id="tracker">
+  <div class="sec-label">Section J</div>
+  <div class="sec-title">Session Tracker</div>
+  <div class="tracker-wrap">
+    <div class="tracker-header">
+      <h3>LOG A SESSION</h3>
+      <p style="font-size:13px;color:var(--muted);margin-top:4px">Stored in your browser. Works offline.</p>
+    </div>
+    <div class="tracker-body">
+      <div class="tab-row">
+        <button class="tab-btn active" onclick="sTab('log',this)">Log Session</button>
+        <button class="tab-btn" onclick="sTab('bm',this)">Benchmarks</button>
+        <button class="tab-btn" onclick="sTab('hist',this)">History</button>
+      </div>
+
+      <div id="tab-log" class="tab-pane active">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="input-group"><label class="input-label">Date</label><input type="date" id="ld" class="tracker-input"></div>
+          <div class="input-group"><label class="input-label">Week #</label><input type="number" id="lw" class="tracker-input" placeholder="1" min="1" max="52"></div>
+        </div>
+        <div class="input-group">
+          <label class="input-label">Session Type</label>
+          <select id="lt" class="tracker-select">
+            ${sessOpts}
+            <option>Benchmark Retest</option>
+            <option>Extra Skill Work</option>
+            <option>Active Recovery</option>
+          </select>
+        </div>
+        <div class="input-group"><label class="input-label">Score / Key Result</label><input type="text" id="ls" class="tracker-input" placeholder="e.g. 5k in 28:30 / Deadlift 5×140kg / AMRAP 8+4"></div>
+        <div class="input-group"><label class="input-label">Main Lift (if applicable)</label><input type="text" id="ll" class="tracker-input" placeholder="e.g. Back Squat 90% × 5 reps @ 135kg"></div>
+        <div class="input-group">
+          <label class="input-label">Energy / Feel (1–10)</label>
+          <select id="lf" class="tracker-select">
+            <option value="">—</option>
+            <option value="10">10 — Crushed it</option>
+            <option value="8">8–9 — Strong session</option>
+            <option value="6">6–7 — Solid, normal</option>
+            <option value="4">4–5 — Flat but showed up</option>
+            <option value="2">1–3 — Rough day</option>
+          </select>
+        </div>
+        <div class="input-group"><label class="input-label">Notes — rep schemes, observations, how you felt</label>
+          <textarea id="ln" class="tracker-textarea" placeholder="e.g. Felt strong on squats. Broke deadlifts 6+4+3. Breathing improved on run intervals. Left knee fine today."></textarea>
+        </div>
+        <button class="btn" onclick="saveE()">SAVE SESSION</button>
+      </div>
+
+      <div id="tab-bm" class="tab-pane">
+        <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Update your benchmark PRs whenever you retest.</p>
+        <div id="bm-inp">${bmInpH}</div>
+        <button class="btn" style="margin-top:8px" onclick="saveBM()">SAVE BENCHMARKS</button>
+        <div id="bm-ok" style="display:none;color:var(--green);font-family:'DM Mono',monospace;font-size:11px;margin-top:8px;letter-spacing:0.1em">✓ SAVED</div>
+      </div>
+
+      <div id="tab-hist" class="tab-pane">
+        <div style="display:flex;gap:8px;margin-bottom:16px;align-items:center;flex-wrap:wrap">
+          <button class="btn ghost" onclick="expLog()">Export JSON</button>
+          <button class="btn danger" onclick="clrAll()">Clear All</button>
+          <span id="ecnt" style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted)"></span>
+        </div>
+        <div id="log-list" class="log-list"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</div>
+<footer>Generated by FitGen · Powered by Claude AI · ${name}'s Programme · Not medical advice · Consult a professional for health concerns</footer>
+
+<script>
+const SK='fg_log_v3', BK='fg_bm_v3';
+document.getElementById('ld').valueAsDate = new Date();
+
+function sTab(n, btn) {
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-'+n).classList.add('active');
+  if (btn) btn.classList.add('active');
+  if (n==='hist') rndr();
+  if (n==='bm') ldBM();
+}
+
+function gLog() { try { return JSON.parse(localStorage.getItem(SK)) || []; } catch { return []; } }
+
+function saveE() {
+  const e = {id:Date.now(),date:document.getElementById('ld').value,week:document.getElementById('lw').value,type:document.getElementById('lt').value,score:document.getElementById('ls').value,lift:document.getElementById('ll').value,feel:document.getElementById('lf').value,notes:document.getElementById('ln').value};
+  if (!e.date) { alert('Please add a date.'); return; }
+  const l = gLog(); l.unshift(e); localStorage.setItem(SK, JSON.stringify(l));
+  ['ls','ll','ln'].forEach(id => document.getElementById(id).value='');
+  document.getElementById('lf').value = '';
+  const btn = document.querySelector('#tab-log .btn');
+  btn.textContent = '✓ SAVED'; btn.style.background = 'var(--green)';
+  setTimeout(() => { btn.textContent = 'SAVE SESSION'; btn.style.background = ''; }, 1500);
+}
+
+function rndr() {
+  const l = gLog();
+  const list = document.getElementById('log-list');
+  document.getElementById('ecnt').textContent = l.length + ' sessions logged';
+  if (!l.length) { list.innerHTML = '<div class="empty-state">NO SESSIONS YET — LOG YOUR FIRST SESSION ABOVE</div>'; return; }
+  list.innerHTML = l.map(e => \`<div class="log-entry">
+    <button class="del-btn" onclick="delE(\${e.id})">✕</button>
+    <div class="log-entry-header">
+      <div><div class="log-date">\${e.date}</div>\${e.week?'<div class="log-week">Week '+e.week+'</div>':''}</div>
+      <span class="log-type-badge">\${e.type}</span>
+    </div>
+    \${e.score?'<div class="log-score">'+e.score+'</div>':''}
+    \${e.lift?'<div style="font-family:DM Mono,monospace;font-size:11px;color:var(--light);margin-top:4px">'+e.lift+'</div>':''}
+    \${e.feel?'<div style="font-family:DM Mono,monospace;font-size:10px;color:var(--muted);margin-top:4px">FEEL: '+e.feel+'/10</div>':''}
+    \${e.notes?'<div class="log-notes">'+e.notes+'</div>':''}
+  </div>\`).join('');
+}
+
+function delE(id) { if (!confirm('Delete?')) return; localStorage.setItem(SK, JSON.stringify(gLog().filter(e=>e.id!==id))); rndr(); }
+function clrAll() { if (!confirm('Clear ALL logs?')) return; localStorage.removeItem(SK); rndr(); }
+function expLog() { const b=new Blob([JSON.stringify(gLog(),null,2)],{type:'application/json'}); const u=URL.createObjectURL(b); const a=document.createElement('a'); a.href=u; a.download='fitgen_log.json'; a.click(); URL.revokeObjectURL(u); }
+function ldBM() { const s=JSON.parse(localStorage.getItem(BK)||'{}'); document.querySelectorAll('#bm-inp input').forEach(inp=>{ if(s[inp.id]) inp.value=s[inp.id]; }); }
+function saveBM() { const d={}; document.querySelectorAll('#bm-inp input').forEach(inp=>{ d[inp.id]=inp.value; }); localStorage.setItem(BK,JSON.stringify(d)); const el=document.getElementById('bm-ok'); el.style.display='block'; setTimeout(()=>el.style.display='none',2000); }
+rndr();
+<\/script>
+</body>
+</html>`;
+}
+
+// ═══════════════════════════════════════
+// DOWNLOAD TRACKER
+// ═══════════════════════════════════════
+function downloadTracker() {
+  if (!genTracker) return;
+  const n = (ans.name || 'my').toLowerCase().replace(/\s+/g, '-');
+  const blob = new Blob([genTracker], {type: 'text/html'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'fitgen-' + n + '-programme.html'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ═══════════════════════════════════════
+// DOWNLOAD PDF
+// ═══════════════════════════════════════
+function downloadPDF() {
+  if (!genProg) return;
+  const p = genProg;
+  const {jsPDF} = window.jspdf;
+  const doc = new jsPDF({unit:'mm',format:'a4'});
+  const W=210, M=18, cW=W-M*2; let y=0;
+
+  function addPage() { doc.addPage(); y=20; doc.setFillColor(10,10,10); doc.rect(0,0,W,10,'F'); doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(232,255,71); doc.text('FITGEN  ·  '+(p.name||'').toUpperCase(),M,7); y=20; }
+  function chk(n) { if (y+n > 278) addPage(); }
+  function secBar(t,r=232,g=255,b=71) { chk(12); doc.setFillColor(r,g,b); doc.rect(M,y,cW,9,'F'); doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(10,10,10); doc.text(t.toUpperCase(),M+4,y+6.3); y+=13; }
+  function body(t,ind=0,sz=9,col=[170,170,170]) { doc.setFont('helvetica','normal'); doc.setFontSize(sz); doc.setTextColor(...col); const lines=doc.splitTextToSize(t,cW-ind); lines.forEach(l=>{chk(6);doc.text(l,M+ind,y);y+=5;}); }
+  function lv(lbl,val) { chk(8); doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(232,255,71); doc.text(lbl.toUpperCase(),M,y); doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(170,170,170); const ls=doc.splitTextToSize(val,cW-46); doc.text(ls[0]||'',M+46,y); y+=5; if(ls.length>1)ls.slice(1).forEach(l=>{chk(5);doc.text(l,M+46,y);y+=5;}); }
+
+  // COVER PAGE
+  doc.setFillColor(10,10,10); doc.rect(0,0,W,297,'F');
+  doc.setFillColor(232,255,71); doc.rect(0,0,7,297,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(232,255,71); doc.text('FITGEN  ·  AI PERFORMANCE PROGRAMME',M,50);
+  doc.setFont('helvetica','normal'); doc.setFontSize(36); doc.setTextColor(240,237,232); doc.text((ans.name||'Your')+"'s",M,76);
+  doc.setFont('helvetica','bold'); doc.setFontSize(26); doc.setTextColor(232,255,71);
+  y=96; doc.splitTextToSize(p.name||'Fitness Programme',cW).forEach(l=>{doc.text(l,M,y);y+=14;});
+  doc.setFont('helvetica','normal'); doc.setFontSize(11); doc.setTextColor(150,150,150);
+  y=148; doc.splitTextToSize(p.summary||'',cW).forEach(l=>{doc.text(l,M,y);y+=7;});
+  doc.setFillColor(232,255,71); doc.rect(M,238,cW,0.5,'F');
+  doc.setFontSize(8); doc.setTextColor(100,100,100);
+  doc.text('FitGen · Claude AI · Not medical advice',M,250);
+  doc.text(new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}),M,258);
+
+  // ANALYSIS + PRIORITIES
+  addPage(); secBar('Performance Analysis',26,26,26);
+  if (p.analysis && p.analysis.headline) body(p.analysis.headline,0,10,[200,200,200]);
+  y+=4; secBar('Top Priorities',232,255,71);
+  (p.priorities||[]).forEach(pr => { chk(16); doc.setFont('helvetica','bold'); doc.setFontSize(9.5); doc.setTextColor(240,237,232); doc.text(pr.title||'',M,y); y+=5; body(pr.body||'',4); y+=2; });
+
+  // ROADMAP
+  addPage(); secBar('Roadmap',26,26,26);
+  (p.roadmap||[]).forEach(r => { chk(18); doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(232,255,71); doc.text(r.head||'',M,y); y+=5; doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(100,100,100); doc.text((r.sub||'').toUpperCase(),M,y); y+=5; body(r.body||'',4); y+=3; });
+
+  // BLOCK 1 WEEKS
+  (p.block1_weeks||[]).forEach(wk => {
+    addPage(); secBar((wk.num||'WEEK') + ' — ' + (wk.focus||''),14,14,14);
+    if (wk.intent) { doc.setFont('helvetica','italic'); doc.setFontSize(10); doc.setTextColor(150,150,150); doc.text(wk.intent,M,y); y+=7; }
+    (wk.sessions||[]).forEach(s => {
+      chk(20); doc.setFillColor(30,30,30); doc.rect(M,y,cW,8,'F');
+      doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(71,197,255); doc.text(s.label||'',M+4,y+5.5); y+=11;
+      if (s.wod_title) { doc.setFont('helvetica','bold'); doc.setFontSize(10.5); doc.setTextColor(240,237,232); doc.text(s.wod_title,M,y); y+=6; }
+      body(s.content||'',0,9);
+      if (s.note) { doc.setFont('helvetica','italic'); doc.setFontSize(8.5); doc.setTextColor(100,100,100); doc.splitTextToSize('Target: '+s.note,cW).forEach(l=>{chk(5);doc.text(l,M,y);y+=5;}); }
+      y+=4;
+    });
+  });
+
+  // NUTRITION + SUPPLEMENTS
+  addPage(); secBar('Nutrition',46,107,79);
+  (p.nutrition||[]).forEach(n => { lv(n.label, n.value); y+=1; });
+  if (p.supplements && p.supplements.length) {
+    y+=4; secBar('Supplement Stack',26,26,26);
+    p.supplements.forEach(s => { chk(12); doc.setFont('helvetica','bold'); doc.setFontSize(9.5); doc.setTextColor(240,237,232); doc.text(s.name,M,y); doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(100,100,100); doc.text(s.dose,M,y+4.5); const bl=doc.splitTextToSize(s.benefit,cW-82); bl.forEach((l,i)=>doc.text(l,M+82,y+i*4.5)); y+=Math.max(10,bl.length*4.5)+2; });
+  }
+
+  // CLOSING NOTE
+  if (p.closing_note) { chk(40); y+=10; doc.setFillColor(20,20,20); doc.rect(M,y,cW,28,'F'); doc.setFillColor(232,255,71); doc.rect(M,y,3,28,'F'); doc.setFont('helvetica','bolditalic'); doc.setFontSize(10); doc.setTextColor(240,237,232); doc.splitTextToSize('"'+p.closing_note+'"',cW-14).forEach((l,i)=>doc.text(l,M+8,y+9+i*6)); }
+
+  const fname = (ans.name||'fitgen').toLowerCase().replace(/\s+/g,'-');
+  doc.save('fitgen-' + fname + '-programme.pdf');
+}
+
+// ═══════════════════════════════════════
+// RESTART
+// ═══════════════════════════════════════
+function restart() {
+  cur=0; ans={}; genTracker=''; genProg=null;
+  document.getElementById('results-screen').classList.remove('active');
+  document.getElementById('err-box').classList.remove('show');
+  document.getElementById('q-wrap').style.display = 'block';
+  renderQ(); window.scrollTo(0,0);
+}
+
+window.addEventListener('load', initApi);
+</script>
+</body>
+</html>
